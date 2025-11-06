@@ -27,32 +27,33 @@ const AuthPage = () => {
     const payload = isLogin
       ? { email: formData.email, password: formData.password }
       : {
-          name: formData.name,
-          email: formData.email,
-          password: formData.password
-        };
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
+      };
 
-    console.log("Sending Login Payload:", payload);
+    console.log(`Sending ${isLogin ? 'Login' : 'Registration'} Payload:`, payload);
 
     try {
-      const response = await axios.post(endpoint, payload, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      // Cleaned up the Axios call (removed redundant headers)
+      const response = await axios.post(endpoint, payload);
 
       if (isLogin) {
-        const token = response.data.token;
+        const { token, isAdmin } = response.data;
         if (!token) throw new Error("No token received from server");
-
+        
+        // Store auth details
         localStorage.setItem('authToken', token);
-        localStorage.setItem('hasLoggedIn', 'true');
+        localStorage.setItem('isAdmin', isAdmin);
+        clearCart();
 
         alert('🎉 Login successful!');
         navigate('/');
       } else {
         alert('✅ Sign Up successful! Please log in now.');
         setIsLogin(true);
+        // Suggested Improvement: Clear name and password fields after successful sign up
+        setFormData({ name: '', email: formData.email, password: '' }); 
       }
 
     } catch (error) {
@@ -104,7 +105,7 @@ const AuthPage = () => {
         <p className='auth-toggle'>
           {isLogin ? "Don't have an account? " : "Already have an account? "}
           <span onClick={() => setIsLogin(!isLogin)} className='toggle-link'>
-            {isLogin ? 'Sign Up' : 'Login'}
+            {isLogin ? 'Sign In' : 'Login'}
           </span>
         </p>
       </div>

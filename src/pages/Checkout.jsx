@@ -1,5 +1,3 @@
-// src/pages/Checkout.jsx
-
 import React, { useState, useContext } from "react";
 import { CartContext } from "../contexts/CartContext";
 import { useNavigate } from "react-router-dom";
@@ -9,7 +7,6 @@ const Checkout = () => {
     const { cart, clearCart } = useContext(CartContext);
     const navigate = useNavigate();
 
-    // Initialize state to capture detailed customer information
     const [form, setForm] = useState({ 
         fullName: '', 
         email: '', 
@@ -17,7 +14,7 @@ const Checkout = () => {
         landmark: '', 
         pincode: '', 
         roadName: '', 
-        paymentMethod: 'cash_on_delivery' // Default payment method
+        paymentMethod: 'cash_on_delivery' 
     });
     const [errors, setErrors] = useState({});
 
