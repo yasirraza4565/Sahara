@@ -1,7 +1,9 @@
-import { useState, useContext } from 'react';
+// src/pages/AuthPage.jsx
+import { useState, useContext, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 import { CartContext } from '../contexts/CartContext';
+import Notification from '../components/Notification'; 
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -11,10 +13,23 @@ const AuthPage = () => {
     password: ''
   });
 
+  const [notification, setNotification] = useState(null);
+
   const navigate = useNavigate();
+  const location = useLocation();
   const { clearCart } = useContext(CartContext);
 
   const BACKEND_URL = 'http://localhost:5000/api';
+
+  // Show any messages passed via location.state (e.g. logout or login-success)
+  useEffect(() => {
+    if (location.state?.message) {
+      setNotification({ message: location.state.message, type: location.state.type || 'info' });
+      // Clear the location state so the message doesn't reappear on refresh
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state, location.pathname, navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -27,44 +42,46 @@ const AuthPage = () => {
     const payload = isLogin
       ? { email: formData.email, password: formData.password }
       : {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password
-      };
+          name: formData.name,
+          email: formData.email,
+          password: formData.password
+        };
 
     console.log(`Sending ${isLogin ? 'Login' : 'Registration'} Payload:`, payload);
 
     try {
-      // Cleaned up the Axios call (removed redundant headers)
       const response = await axios.post(endpoint, payload);
 
       if (isLogin) {
         const { token, isAdmin } = response.data;
-        if (!token) throw new Error("No token received from server");
-        
+        if (!token) throw new Error('No token received from server');
+
         // Store auth details
         localStorage.setItem('authToken', token);
         localStorage.setItem('isAdmin', isAdmin);
         clearCart();
 
-        alert('🎉 Login successful!');
-        navigate('/');
+        // Navigate to home and show success message via location.state
+        navigate('/', { state: { message: 'Login successful!', type: 'success' } });
       } else {
-        alert('✅ Sign Up successful! Please log in now.');
+        // On successful registration, show inline notification and switch to login
+        setNotification({ message: 'Sign Up successful! Please log in.', type: 'success' });
         setIsLogin(true);
-        // Suggested Improvement: Clear name and password fields after successful sign up
-        setFormData({ name: '', email: formData.email, password: '' }); 
+        // keep the email to help user log in, clear name & password
+        setFormData({ name: '', email: formData.email, password: '' });
       }
-
     } catch (error) {
-      const message = error.response?.data?.message || 'An unknown error occurred.';
-      alert(`❌ Authentication failed: ${message}`);
-      console.error("Auth Error:", error);
+      const message = error.response?.data?.message || error.message || 'An unknown error occurred.';
+      setNotification({ message: `Authentication failed: ${message}`, type: 'error' });
+      console.error('Auth Error:', error);
     }
   };
 
   return (
     <div className='auth-page'>
+      {/* Notification component (renders only when message exists) */}
+      <Notification message={notification?.message} type={notification?.type} />
+
       <div className='auth-form-container'>
         <h2>{isLogin ? 'Customer Login' : 'Create Account'}</h2>
 
@@ -103,9 +120,17 @@ const AuthPage = () => {
         </form>
 
         <p className='auth-toggle'>
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
-          <span onClick={() => setIsLogin(!isLogin)} className='toggle-link'>
-            {isLogin ? 'Sign In' : 'Login'}
+          {isLogin ? "Don't have an account? " : 'Already have an account? '}
+          <span
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setNotification(null); // clear existing notifications when toggling
+            }}
+            className='toggle-link'
+            role='button'
+            tabIndex={0}
+          >
+            {isLogin ? 'Sign Up' : 'Login'}
           </span>
         </p>
       </div>

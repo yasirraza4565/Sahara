@@ -1,217 +1,325 @@
-// File: server.js - Consolidated and Corrected Code
-
-require('dotenv').config(); // Load environment variables from .env
+// File: server.js
+require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql2');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const cors = require('cors');
+
 const PORT = process.env.PORT || 5000;
 
-// --- 1. APP SETUP & MIDDLEWARE ---
-const app = express();
+const JWT_SECRET = process.env.JWT_SECRET || 'replace_this_with_strong_secret';
+const BCRYPT_SALT_ROUNDS = 12;
 
+const app = express();
 app.use(cors());
 app.use(express.json());
 
+// ---- MySQL POOL (promise) ----
+// Ensure your .env uses DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
+const pool = mysql
+  .createPool({
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'sahara',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+  })
+  .promise();
 
+// ---- Startup DB check ----
+(async () => {
+  try {
+    await pool.query('SELECT 1');
+    console.log('✅ MySQL pool connected (startup check)');
+  } catch (err) {
+    console.error('❌ MySQL connection failed at startup:', err.message);
+    process.exit(1);
+  }
+})();
 
-// --- 2. DATABASE CONNECTION SETUP ---
-const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
-});
+/* --------------------------- JWT / Auth Middleware --------------------------- */
 
-db.connect(err => {
-    if (err) {
-        console.error('❌ Error connecting to MySQL:', err.stack);
-        return;
-    }
-    console.log('✅ Connected to MySQL Database as id ' + db.threadId);
-});
+function signToken(payload) {
+  // Token valid for 12 hours
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: '12h' });
+}
 
-
-// --- 3. MIDDLEWARE FUNCTIONS ---
-
-// Placeholder for Token Verification (Real apps use JWT library)
-const verifyTokenAndAdmin = (req, res, next) => {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(403).json({ message: 'Authorization token required.' });
-    }
-
-    const token = authHeader.split(' ')[1];
-
-    // Assuming a successful login sets the token format to "FAKE_JWT_TOKEN_[ID]".
-    if (!token || !token.startsWith('FAKE_JWT_TOKEN_')) {
-        return res.status(401).json({ message: 'Invalid token.' });
-    }
-
-    // HARDCODE ADMIN CHECK (TEMPORARY): Check if the user ID is an admin ID
-    const userId = token.split('_').pop();
-    if (userId !== '1') {
-        return res.status(403).json({ message: 'Access denied: Requires admin privileges.' });
-    }
-
-    req.userId = userId;
+function verifyToken(req, res, next) {
+  const authHeader = req.headers.authorization || '';
+  if (!authHeader.startsWith('Bearer '))
+    return res.status(401).json({ message: 'Token required' });
+  try {
+    req.user = jwt.verify(authHeader.split(' ')[1], JWT_SECRET);
     next();
-};
+  } catch {
+    return res.status(401).json({ message: 'Invalid or expired token' });
+  }
+}
 
+function verifyAdmin(req, res, next) {
+  if (!req.user || !req.user.is_admin)
+    return res.status(403).json({ message: 'Admin privileges required' });
+  next();
+}
 
-// --- 4. API ROUTES ---
+/* ----------------------------------- Routes ---------------------------------- */
 
-// 4.1 Health Check / Root Route (Optional)
-app.get('/', (req, res) => {
+// Health check
+app.get('/', (_req, res) =>
+  res.json({ message: 'Sahara API running ✅', version: '1.0' })
+);
+
+// 1) Register
+app.post('/api/register', async (req, res) => {
+  try {
+    const { name, email, password } = req.body || {};
+    if (!name || !email || !password)
+      return res.status(400).json({ message: 'Missing fields' });
+
+    const [exists] = await pool.execute(
+      'SELECT user_id FROM users WHERE email = ?',
+      [email]
+    );
+    if (exists.length)
+      return res.status(409).json({ message: 'Email already registered' });
+
+    const hash = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
+    await pool.execute(
+      'INSERT INTO users (full_name, email, password_hash) VALUES (?, ?, ?)',
+      [name, email, hash]
+    );
+
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (err) {
+    console.error('Register error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// 2) Login
+app.post('/api/login', async (req, res) => {
+  try {
+    const { email, password } = req.body || {};
+    if (!email || !password)
+      return res.status(400).json({ message: 'Missing credentials' });
+
+    const [rows] = await pool.execute(
+      'SELECT user_id, email, password_hash, is_admin FROM users WHERE email = ?',
+      [email]
+    );
+    if (!rows.length) return res.status(401).json({ message: 'Invalid credentials' });
+
+    const user = rows[0];
+    const ok = await bcrypt.compare(password, user.password_hash);
+    if (!ok) return res.status(401).json({ message: 'Invalid credentials' });
+
+    const token = signToken({
+      user_id: user.user_id,
+      email: user.email,
+      is_admin: !!user.is_admin,
+    });
+
     res.json({
-        message: 'Welcome to the Sahara E-commerce API!',
-        status: 'Server is running',
-        version: '1.0'
+      message: 'Login successful',
+      token,
+      isAdmin: !!user.is_admin,
     });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
-// 4.2 Fetch Product List (Placeholder)
-app.get('/api/products', (req, res) => {
-    res.json({ message: "Products data will be served from here." });
+// 3) Admin: Add product (PROTECTED)
+app.post('/api/admin/product', verifyToken, verifyAdmin, async (req, res) => {
+  try {
+    const { title, price, image, stock } = req.body || {};
+    if (!title || price == null)
+      return res.status(400).json({ message: 'Missing product details' });
+
+    await pool.execute(
+      'INSERT INTO products (title, price, image_url, stock_quantity, sales_count) VALUES (?, ?, ?, ?, 0)',
+      [title, price, image || null, stock || 0]
+    );
+
+    res.status(201).json({ message: 'Product added successfully' });
+  } catch (err) {
+    console.error('Add product error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
+// 4) Place Order (Transactional)
+app.post('/api/orders', async (req, res) => {
+  let conn;
+  try {
+    const { customer, shippingAddress, paymentMethod, items } = req.body || {};
 
-// 4.3 User Registration
-app.post('/api/register', (req, res) => {
-    const { name, email, password } = req.body;
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: 'Order must have items' });
+    }
 
-    // NOTE: In production, hash the password before inserting!
-    const sql = "INSERT INTO users (full_name, email, password_hash) VALUES (?,?,?)";
-
-    db.query(sql, [name, email, password], (err, result) => {
-        if (err) {
-            console.error(err);
-            if (err.code === 'ER_DUP_ENTRY') {
-                return res.status(409).json({ message: 'Email already registered.' });
-            }
-            return res.status(500).json({ message: "Failed to register user." });
-        }
-        res.status(201).json({ message: "User registered successfully!" });
-    });
-});
-
-
-// 4.4 User Login
-app.post('/api/login', (req, res) => {
-    const { email, password } = req.body;
-
-    const sql = "SELECT user_id, email, password_hash, is_admin FROM users WHERE email = ?";
-
-    db.query(sql, [email], (err, results) => {
-        if (err) return res.status(500).json({ message: 'Server error during login.' });
-        if (results.length === 0) return res.status(401).json({ message: 'Invalid email or password.' });
-
-        const user = results[0];
-        const storedPassword = user.password_hash ? user.password_hash.trim() : '';
-
-        if (storedPassword !== password) { 
-             return res.status(401).json({ message: 'Invalid email or password.' });
-        }
-        
-        // 1. Get the raw database boolean value (0 or 1)
-        const isAdminFromDB = user.is_admin; 
-        const token = "FAKE_JWT_TOKEN_FOR_" + user.user_id;
-
-        res.json({
-            message: 'Login successful!',
-            token: token,
-            // THE ISSUE IS LIKELY HERE: MySQL BOOLEAN to String conversion
-            isAdmin: user.is_admin === 1 ? 'true' : 'false'
-        });
-    });
-});
-
-
-// 4.5 User Logout
-app.post('/api/logout', (req, res) => {
-    res.json({ message: "Logout confirmed." });
-});
-
-
-// 4.6 (PROTECTED) Get Admin Dashboard Metrics
-app.get('/api/admin/dashboard', verifyTokenAndAdmin, (req, res) => {
-    // Placeholder logic...
-    res.json({
-        totalRevenue: 5400.75,
-        productsSold: 125,
-        productsInStock: 890,
-        profit: 2200.50
-    });
-});
-
-
-// 4.7 (PROTECTED) Insert New Product Card Details
-app.post('/api/admin/product', verifyTokenAndAdmin, (req, res) => {
-    const { title, price, image, stock } = req.body;
-
-    // NOTE: Requires a 'products' table in MySQL.
-    const sql = "INSERT INTO products (title, price, image_url, stock_quantity) VALUES (?, ?, ?, ?)";
-
-    db.query(sql, [title, price, image, stock], (err, result) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ message: "Failed to insert product." });
-        }
-        res.status(201).json({ message: "Product added successfully!" });
-    });
-});
-
-
-// 4.8 Checkout/Order Placement (The FIXED Route)
-app.post("/api/orders", (req, res) => {
-    // CURRENT DESTUCTURING: This line is incomplete or incorrect
-    const {
-        customer,
-        shippingAddress,
-        paymentMethod,
-        items, // The cart contents
-        totalAmount
-    } = req.body;
-
-    // 2. CONSTRUCT the single shipping_address string required by the MySQL table
     const fullAddress = [
-        shippingAddress.street,
-        shippingAddress.roadName,
-        shippingAddress.landmark,
-        `Pincode: ${shippingAddress.pincode}`
-    ].filter(Boolean).join(', ');
+      shippingAddress?.street,
+      shippingAddress?.roadName,
+      shippingAddress?.landmark,
+      shippingAddress?.pincode ? `Pincode: ${shippingAddress.pincode}` : null,
+    ]
+      .filter(Boolean)
+      .join(', ');
 
-    // 3. Prepare data for the MySQL query, ensuring NO NULL values are passed for NOT NULL columns
+    conn = await pool.getConnection();
+    await conn.beginTransaction();
+
+    // Lock product rows to prevent race conditions
+    const ids = items.map((i) => i.id);
+    const placeholders = ids.map(() => '?').join(',');
+    const [products] = await conn.query(
+      `SELECT id, price, stock_quantity FROM products WHERE id IN (${placeholders}) FOR UPDATE`,
+      ids
+    );
+
+    const byId = {};
+    products.forEach((p) => (byId[p.id] = p));
+
+    const errors = [];
+    let computedTotal = 0;
+
+    for (const it of items) {
+      const p = byId[it.id];
+      if (!p) {
+        errors.push({ id: it.id, message: 'Product not found' });
+        continue;
+      }
+      if (p.stock_quantity < it.quantity) {
+        errors.push({ id: it.id, message: 'Insufficient stock' });
+      }
+      computedTotal += Number(p.price) * it.quantity;
+    }
+
+    if (errors.length) {
+      await conn.rollback();
+      return res.status(400).json({ message: 'Validation failed', errors });
+    }
+
+    // Insert order
     const orderData = {
-        // Accessing nested properties: customer.fullName and customer.email
-        customer_name: customer.fullName || 'Guest Customer', // Fallback value for safety
-        customer_email: customer.email,
-
-        shipping_address: fullAddress,
-        payment_method: paymentMethod,
-        total_amount: totalAmount,
-        order_details: JSON.stringify(items),
-        order_date: new Date()
+      customer_name: customer?.fullName || 'Guest',
+      customer_email: customer?.email || null,
+      shipping_address: fullAddress,
+      payment_method: paymentMethod || null,
+      total_amount: computedTotal,
+      order_details: JSON.stringify(items),
+      order_date: new Date(),
     };
 
-    const sql = "INSERT INTO orders SET ?";
+    const [insert] = await conn.query('INSERT INTO orders SET ?', orderData);
+    const orderId = insert.insertId;
 
-    db.query(sql, orderData, (err, result) => {
-        if (err) {
-            console.error("MySQL Order Insertion Error (Check DB Schema/Data):", err);
-            // Return the specific message from the server log if possible
-            return res.status(500).json({ message: "Database error placing order. Check backend console for details." });
-        }
-        console.log("Order placed successfully! ID:", result.insertId);
-        res.status(201).json({
-            message: 'Order placed successfully!',
-            orderId: result.insertId
-        });
+    // Update stock & sales
+    for (const it of items) {
+      await conn.query(
+        'UPDATE products SET stock_quantity = stock_quantity - ?, sales_count = sales_count + ? WHERE id = ?',
+        [it.quantity, it.quantity, it.id]
+      );
+    }
+
+    await conn.commit();
+    res
+      .status(201)
+      .json({ message: 'Order placed', orderId, totalAmount: computedTotal });
+  } catch (err) {
+    if (conn) {
+      try {
+        await conn.rollback();
+      } catch (_) {}
+      conn.release();
+    }
+    console.error('Order error:', err);
+    res.status(500).json({ message: 'Server error placing order' });
+    return;
+  }
+  if (conn) conn.release();
+});
+
+// 5) Admin Dashboard (PROTECTED)
+app.get('/api/admin/dashboard', verifyToken, verifyAdmin, async (_req, res) => {
+  try {
+    const [stock] = await pool.query(
+      'SELECT SUM(stock_quantity) AS productsInStock, COUNT(CASE WHEN stock_quantity < 10 THEN 1 END) AS lowStockAlerts, SUM(sales_count) AS totalProductsSold FROM products'
+    );
+    const [revenue] = await pool.query(
+      'SELECT SUM(total_amount) AS totalRevenue FROM orders'
+    );
+    const [top] = await pool.query(
+      'SELECT title, sales_count, stock_quantity FROM products ORDER BY sales_count DESC LIMIT 5'
+    );
+
+    res.json({
+      totalRevenue: parseFloat(revenue[0]?.totalRevenue) || 0,
+      productsSold: stock[0]?.totalProductsSold || 0,
+      productsInStock: stock[0]?.productsInStock || 0,
+      lowStockAlerts: stock[0]?.lowStockAlerts || 0,
+      profit: (parseFloat(revenue[0]?.totalRevenue) || 0) * 0.4, // demo margin
+      salesPerformance: top,
     });
+  } catch (err) {
+    console.error('Dashboard error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
+/* ----------------------- 4.9 PROTECTED: My Stock — All Products ----------------------- */
+// Fetch all product data for the "My Stock" tab
+app.get('/api/admin/products/all', verifyToken, verifyAdmin, async (_req, res) => {
+  try {
+    const sql =
+      'SELECT id, title, price, image_url, stock_quantity, sales_count FROM products ORDER BY title ASC';
+    const [products] = await pool.query(sql);
 
-// --- 5. SERVER START ---
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    const productsWithMetrics = products.map((p) => ({
+      ...p,
+      totalValue: Number(p.price) * Number(p.stock_quantity),
+    }));
+
+    res.json(productsWithMetrics);
+  } catch (err) {
+    console.error('Fetch all products error:', err);
+    res.status(500).json({ message: 'Server error fetching stock data.' });
+  }
 });
+
+/* ----------------------- Route 8: Update Admin Profile (PROTECTED) ----------------------- */
+// Update admin profile details using user id from token for security
+app.put('/api/admin/profile', verifyToken, verifyAdmin, async (req, res) => {
+  try {
+    const { fullName, email, location } = req.body || {};
+
+    // Use user_id from the decoded token (more secure than trusting client-sent ID)
+    const userId = req.user && req.user.user_id;
+    if (!userId) return res.status(400).json({ message: 'Invalid user token.' });
+
+    // Only update allowed fields. Adjust columns to match your users table schema.
+    const [result] = await pool.execute(
+      'UPDATE users SET full_name = ?, location = ?, email = ? WHERE user_id = ?',
+      [fullName || null, location || null, email || null, userId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'User not found or nothing changed.' });
+    }
+
+    res.json({ message: 'Profile updated successfully!' });
+  } catch (err) {
+    console.error('Profile update error:', err);
+    res.status(500).json({ message: 'Server error updating profile.' });
+  }
+});
+
+/* -------------------------------- Start Server -------------------------------- */
+app.listen(PORT, () =>
+  console.log(`🚀 Server running on http://localhost:${PORT}`)
+);

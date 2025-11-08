@@ -1,140 +1,342 @@
-import React, { useState, useeffect } from 'react';
+// src/pages/AdminDashboard.jsx
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { Doughnut, Bar } from 'react-chartjs-2';
+import 'chart.js/auto'; // registers chart types
 
+// NOTE: BACKEND_URL points to your server base that already contains /api routes
 const BACKEND_URL = 'http://localhost:5000/api';
 
-const AdminDashboard = () => {
-    const navigate = useNavigate();
-    const [isAdmin, setIsAdmin] = useState(false);
-    const [metrics, setMetrics] = useState({ totalRevenue: 0, productsSold: 0, productsInStock:0 });
-    const [newProduct, setNewProduct] = useState({ title: '', price: '', image: '', stock: ''});
+/* ---------------------------- Dashboard Home ---------------------------- */
+const DashboardHome = ({ metrics = {} }) => {
+  const revenue = parseFloat(metrics.totalRevenue) || 0;
+  const profit = parseFloat(metrics.profit) || 0;
+  const goal = 10000;
 
-    useEffect(() => {
-        const token = localStorage.getItem('authToken');
-        const isAdminFlag = localStorage.getItem('isAdmin');
+  const salesData = {
+    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+    datasets: [{ label: 'Weekly Sales', data: [3500, 4800, 6200, 7500], backgroundColor: 'rgba(54,162,235,0.5)' }],
+  };
 
-        if (!token || isAdminFlag !== 'true'){
-            alert('access Denied: you must be and administrator.');
-            navigate('/');
-            return;
-        }
-        setIsAdmin(true);
-        fetchDashboardData(token);
-    }, [navigate]);
+  const speedData = {
+    labels: ['Reached', 'Remaining'],
+    datasets: [{ data: [Math.min(revenue, goal), Math.max(goal - revenue, 0)], backgroundColor: ['#36A2EB', '#E9ECEF'] }],
+  };
 
-    const fetchDashboardData = async (token) => {
-        try {
-            const response = await axios.get(`${BACKEND_URL}/admin/dashboard`,{
-                headers: { Authorization: `Bearer ${token}`}
-            });
-            setMetrics(response.data);
-        } catch (error) {
-            console.error("failed to fetch admin data",error);
-            alert("session expired or unauthorized access to metrics.");
-            navigate('/auth');
-        }
-    };
+  return (
+    <>
+      <h2 className="admin-section-title">Overview Dashboard</h2>
 
+      <div className="metrics-grid">
+        <div className="metric-card revenue">
+          <h3>TOTAL REVENUE</h3>
+          <p>${revenue.toFixed(2)}</p>
+        </div>
+        <div className="metric-card sold">
+          <h3>PRODUCTS SOLD</h3>
+          <p>{metrics.productsSold ?? 0}</p>
+        </div>
+        <div className="metric-card stock">
+          <h3>PRODUCTS IN STOCK</h3>
+          <p>{metrics.productsInStock ?? 0}</p>
+        </div>
+        <div className="metric-card alert">
+          <h3>LOW STOCK ALERT</h3>
+          <p className={metrics.lowStockAlerts > 0 ? 'text-danger' : 'text-success'}>
+            {metrics.lowStockAlerts ?? 0}
+          </p>
+        </div>
+        <div className="metric-card profit">
+          <h3>ESTIMATED PROFIT</h3>
+          <p className={profit > 0 ? 'text-success' : ''}>${profit.toFixed(2)}</p>
+        </div>
+      </div>
 
-    const handleProductChange = (e) => {
-        setNewProduct({ ...newProduct, [e.target.name]: e.target.value});
-    };
+      <div className="dashboard-charts-grid">
+        <div className="chart-box">
+          <h3>Monthly Sales Volume</h3>
+          <Bar data={salesData} />
+        </div>
+        <div className="chart-box">
+          <h3>Revenue Progress (Goal: ${goal})</h3>
+          <Doughnut data={speedData} options={{ circumference: Math.PI, rotation: -Math.PI, plugins: { legend: { display: false } } }} />
+        </div>
+      </div>
 
-    const handleAddProduct = async (e) => {
-        e.preventDefault();
-        const token = localStorage.getItem('authToken');
+      <h2 className="admin-section-title mt-5">Top Sales Performance</h2>
+      <div className="sales-performance-list">
+        {metrics.salesPerformance && metrics.salesPerformance.length ? (
+          metrics.salesPerformance.map((item, idx) => (
+            <div key={idx} className="performance-item">
+              
+            </div>
+          ))
+        ) : (
+          <div>No sales performance data available.</div>
+        )}
+      </div>
+    </>
+  );
+};
 
-        try {
-            await axios.post(`${BACKEND_URL}/admin/products`, newProduct, { 
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            alert('Product added successfully!');
-            setNewProduct({ title: '', price: '', image: '', stock: ''});
-            fetchDashboardData(token);
-        } catch (error) {
-            alert('Failed to add product.');
-            console.error(error);
-        }
-    };
+/* ---------------------------- My Stock ---------------------------- */
+const MyStock = ({ products = [], onAddProduct, fetchProducts, setNotification }) => {
+  const [newProduct, setNewProduct] = useState({ title: '', price: '', image: '', description: '', stock: 30 });
 
-    if (!isAdmin) {
-        return <div className='admin-page'> Loading or Redirecting... </div>
+  const handleChange = (e) => setNewProduct({ ...newProduct, [e.target.name]: e.target.value });
+
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    if (!newProduct.title || !newProduct.price || Number(newProduct.stock) <= 0) {
+      setNotification?.({ message: 'Title, Price and Stock (>0) are required', type: 'error' });
+      return;
     }
 
-    return (
-        <div className='admin-page'>
-            <header className='admin-header'>
-                <h1>Admin Control Panel</h1>
-                <p>Manage products, inventory, and sales performance.</p>
-            </header>
+    await onAddProduct({
+      title: newProduct.title,
+      price: Number(newProduct.price),
+      image: newProduct.image,
+      stock: Number(newProduct.stock),
+      description: newProduct.description,
+    });
 
-            <section className='admin-metrics'>
-                <h2>Sales Dashboard</h2>
-                <div className='metrics-grid'>
-                    <div className='metrics-card revenue'>
-                        <h3>Total Revenue</h3>
-                        <p>${metrics.totalRevenue.toFixed(2)}</p>
-                    </div>
-                    <div className='metric-card sold'>
-                        <h3>Products Sold</h3>
-                        <p>{metrics.productsSold}</p>
-                    </div>
-                    <div className='metric-card stock'>
-                        <h3>Products in Stock</h3>
-                        <p>{metrics.productsInstock}</p>
-                    </div>
+    setNewProduct({ title: '', price: '', image: '', description: '', stock: 30 });
+    if (typeof fetchProducts === 'function') fetchProducts();
+  };
 
-                    <div className='metric-card profit'>
-                        <h3>Profit / Loss</h3>
-                        <p className={metrics.profit > 0 ? 'positive' : 'negative'}>
-                            ${metrics.profit ? metrics.profit.toFixed(2) : 'N/A'}
-                        </p>
-                    </div>
-                </div>
-            </section>
+  return (
+    <>
+      <h2 className="admin-section-title">Inventory: My Stock ({products.length} Products)</h2>
 
-            <section className='admin-product-management'>
-                <h2>Add New Product</h2>
-                <form onSubmit={handleAddProduct} className='product-form-grid'>
-                    <input 
-                    type='text'
-                    name='title'
-                    placeholder='Product Title'
-                    value={newProduct.title}
-                    onChange={handleProductChange}
-                    required
-                    />
-                    <input
-                    type='number'
-                    name='price'
-                    placeholder='Price'
-                    value={newProduct.price}
-                    onChange={handleProductChange}
-                    required
-                    />
-                    <input
-                    type='text'
-                    name='image'
-                    placeholder='Image URL (/images/product.jpg)'
-                    value={newProduct.image}
-                    onChange={handleProductChange}
-                    required
-                    />
-                    <input
-                    type='number'
-                    name='stock'
-                    placeholder='Stock Quantity'
-                    value={newProduct.stock}
-                    onChange={handleAddProduct}
-                    required
-                    />
+      <table className="stock-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Sold</th>
+            <th>Total Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {products.length ? (
+            products.map((p) => (
+              <tr key={p.id}>
+                <td>{p.id}</td>
+                <td className="product-cell">
+                  {p.image_url && <img src={p.image_url} alt={p.title} className="stock-img" />}
+                  <span>{p.title}</span>
+                </td>
+                <td>${Number(p.price).toFixed(2)}</td>
+                <td className={p.stock_quantity < 10 ? 'text-danger' : ''}>{p.stock_quantity}</td>
+                <td>{p.sales_count}</td>
+                <td>${(Number(p.totalValue) || Number(p.price) * Number(p.stock_quantity) || 0).toFixed(2)}</td>
+              </tr>
+            ))
+          ) : (
+            <tr><td colSpan="6">No products found. Add new products below.</td></tr>
+          )}
+        </tbody>
+      </table>
 
-                    <button type='submit' className='btn admin-submit-btn'>Add Product to Inventory</button>
-                </form>
-            </section>
+      <h2 className="admin-section-title mt-5">Add New Product</h2>
+      <form onSubmit={handleAdd} className="product-form-grid">
+        <input name="title" placeholder="Title" value={newProduct.title} onChange={handleChange} required />
+        <input name="price" type="number" placeholder="Dollar Price" value={newProduct.price} onChange={handleChange} required />
+        <textarea name="description" placeholder="Description" value={newProduct.description} onChange={handleChange} />
+        <input name="image" placeholder="Image URL" value={newProduct.image} onChange={handleChange} />
+        <input name="stock" type="number" placeholder="Stock Qty (e.g. 30)" value={newProduct.stock} onChange={handleChange} required />
+        <button type="submit" className="btn admin-submit-btn">Add Product</button>
+      </form>
+    </>
+  );
+};
+
+/* ---------------------------- Sales Report ---------------------------- */
+const SalesReport = ({ metrics = {} }) => {
+  // Placeholder — implement orders fetch route when backend exists
+  return (
+    <>
+      <h2 className="admin-section-title">Detailed Sales Report</h2>
+      <div className="metrics-grid mb-4">
+        <div className="metric-card revenue"><h3>Total Processed Value</h3><p>${(parseFloat(metrics.totalRevenue) || 0).toFixed(2)}</p></div>
+        <div className="metric-card sold"><h3>Products Sold</h3><p>{metrics.productsSold ?? 0}</p></div>
+        <div className="metric-card profit"><h3>Estimated Profit</h3><p className="text-success">${(parseFloat(metrics.profit) || 0).toFixed(2)}</p></div>
+      </div>
+
+      <table className="stock-table">
+        <thead><tr><th>Order ID</th><th>Customer</th><th>Total</th><th>Date</th></tr></thead>
+        <tbody><tr><td colSpan="4">Sales report data will be loaded from the database here.</td></tr></tbody>
+      </table>
+    </>
+  );
+};
+
+/* ---------------------------- My Profile (Editable) ---------------------------- */
+const MyProfile = ({ profile = {}, setNotification, fetchData }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    name: profile.name || '',
+    mobNo: profile.mobNo || '',
+    email: profile.email || '',
+    location: profile.location || '',
+    user_id: profile.user_id || null, // optional; backend should use JWT instead
+  });
+
+  useEffect(() => {
+    setFormData((f) => ({ ...f, name: profile.name || '', mobNo: profile.mobNo || '', email: profile.email || '', location: profile.location || '', user_id: profile.user_id || f.user_id }));
+  }, [profile]);
+
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const handleSave = async () => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      setNotification?.({ message: 'Not authenticated', type: 'error' });
+      return;
+    }
+
+    const payload = {
+      // Backend should ignore user_id from client; sending for compatibility if your API expects it
+      userId: formData.user_id,
+      fullName: formData.name,
+      email: formData.email,
+      mobNo: formData.mobNo,
+      location: formData.location,
+    };
+
+    try {
+      await axios.put(`${BACKEND_URL}/admin/profile`, payload, { headers: { Authorization: `Bearer ${token}` } });
+      setNotification?.({ message: 'Profile updated successfully!', type: 'success' });
+      setIsEditing(false);
+      if (typeof fetchData === 'function') fetchData(token);
+    } catch (err) {
+      console.error('Profile update error:', err);
+      setNotification?.({ message: err.response?.data?.message || 'Failed to save profile', type: 'error' });
+    }
+  };
+
+  return (
+    <>
+      <h2 className="admin-section-title">Admin Profile</h2>
+      <div className="profile-card">
+        <img src={profile.image || '/images/admin_placeholder.png'} alt="Admin" className="profile-img" />
+        <div className="profile-details">
+          <p><strong>Name:</strong> {isEditing ? <input name="name" value={formData.name} onChange={handleChange} /> : <span>{formData.name}</span>}</p>
+          <p><strong>Mobile:</strong> {isEditing ? <input name="mobNo" value={formData.mobNo} onChange={handleChange} /> : <span>{formData.mobNo}</span>}</p>
+          <p><strong>Email:</strong> <span>{formData.email}</span></p>
+          <p><strong>Location:</strong> {isEditing ? <input name="location" value={formData.location} onChange={handleChange} /> : <span>{formData.location}</span>}</p>
         </div>
-    );
+
+        <div className="social-links">
+          <a href="#"><i className="fab fa-instagram instagram-icon" /></a>
+          <a href="#"><i className="fab fa-facebook-f facebook-icon" /></a>
+        </div>
+      </div>
+
+      {isEditing ? (
+        <div>
+          <button className="btn admin-submit-btn mt-4 me-2" onClick={handleSave}>Save Changes</button>
+          <button className="btn admin-cancel-btn mt-4" onClick={() => setIsEditing(false)}>Cancel</button>
+        </div>
+      ) : (
+        <button className="btn admin-submit-btn mt-4" onClick={() => setIsEditing(true)}>Edit Profile</button>
+      )}
+    </>
+  );
+};
+
+/* ---------------------------- Main Component ---------------------------- */
+const AdminDashboard = ({ initialTab = 'Dashboard', setNotification }) => {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState(initialTab);
+  const [metrics, setMetrics] = useState({});
+  const [products, setProducts] = useState([]);
+  const [profile, setProfile] = useState({}); // profile can be fetched or static
+
+  // fetchData loads metrics + products (and optionally profile if you have an endpoint)
+  const fetchData = useCallback(async (token) => {
+    if (!token) return;
+    try {
+      const [metricsRes, productsRes /*, profileRes (optional)*/] = await Promise.all([
+        axios.get(`${BACKEND_URL}/admin/dashboard`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${BACKEND_URL}/admin/products/all`, { headers: { Authorization: `Bearer ${token}` } }),
+        // axios.get(`${BACKEND_URL}/admin/profile`, { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
+      setMetrics(metricsRes.data || {});
+      setProducts(productsRes.data || []);
+      // setProfile(profileRes?.data || {});
+    } catch (err) {
+      console.error('Dashboard Data Fetch Error:', err);
+      setNotification?.({ message: 'Error loading dashboard data.', type: 'error' });
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('isAdmin');
+        navigate('/auth');
+      }
+    }
+  }, [navigate, setNotification]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const isAdminFlag = localStorage.getItem('isAdmin');
+    if (!token || isAdminFlag !== 'true') {
+      alert('Access Denied: You must be an administrator.');
+      navigate('/');
+      return;
+    }
+    fetchData(token);
+    
+    setProfile(prev => ({ ...prev, name: 'Sahara Admin', mobNo: '9876543210', email: 'admin@sahara.com', location: 'Chennai, India', image: '/images/admin_placeholder.png' }));
+  }, [fetchData, navigate]);
+
+  const handleAddProduct = async (productData) => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      setNotification?.({ message: 'Not authenticated', type: 'error' });
+      return;
+    }
+    try {
+      const payload = { title: productData.title, price: productData.price, image: productData.image, stock: productData.stock };
+      await axios.post(`${BACKEND_URL}/admin/product`, payload, { headers: { Authorization: `Bearer ${token}` } });
+      setNotification?.({ message: 'Product added successfully!', type: 'success' });
+      fetchData(token);
+    } catch (err) {
+      console.error('Add Product Error:', err);
+      setNotification?.({ message: 'Failed to add product.', type: 'error' });
+    }
+  };
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'Sales Report': return <SalesReport metrics={metrics} />;
+      case 'My Stock': return <MyStock products={products} onAddProduct={handleAddProduct} fetchProducts={() => fetchData(localStorage.getItem('authToken'))} setNotification={setNotification} />;
+      case 'Profile': return <MyProfile profile={profile} setNotification={setNotification} fetchData={fetchData} />;
+      case 'Dashboard':
+      default: return <DashboardHome metrics={metrics} />;
+    }
+  };
+
+  return (
+    <div className="admin-page-container">
+      <header className="admin-top-header">
+        <h1>Dashboard Overview</h1>
+      </header>
+
+      <div className="admin-nav-bar">
+        <button className={activeTab === 'Dashboard' ? 'active' : ''} onClick={() => setActiveTab('Dashboard')}>Dashboard</button>
+        <button className={activeTab === 'Sales Report' ? 'active' : ''} onClick={() => setActiveTab('Sales Report')}>Sales Report</button>
+        <button className={activeTab === 'My Stock' ? 'active' : ''} onClick={() => setActiveTab('My Stock')}>My Stock</button>
+        <button className={activeTab === 'Profile' ? 'active' : ''} onClick={() => setActiveTab('Profile')}>Profile</button>
+      </div>
+
+      <section className="admin-content">
+        {renderContent()}
+      </section>
+    </div>
+  );
 };
 
 export default AdminDashboard;

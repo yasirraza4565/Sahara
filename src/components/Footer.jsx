@@ -8,10 +8,10 @@ const Footer = () => {
         
         <div className="footer-section about">
           <h4>MyShop</h4>
-          <p>
+          <h5>
             The best luxury for quality products at sahara prices.
             Shop with Sahara!
-          </p>
+          </h5>
         </div>
         
         <div className="footer-section links">

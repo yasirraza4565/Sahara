@@ -24,6 +24,7 @@ export function CartProvider({ children }) {
                     id: product.id, 
                     title: product.title, 
                     price : product.price, 
+                    description: product.description, 
                     image: product.image || product.images?.[0], 
                     quantity: qty 
                 }

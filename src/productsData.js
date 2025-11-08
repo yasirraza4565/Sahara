@@ -1,88 +1,108 @@
-// src/productsData.js (Corrected file)
-
+// src/productsData.js
 export const products = [
     {
         id: 1,
-        title: 'Wireless Headphones',
-        price: 99.99,
-        description: 'Noise-cancelling over-ear headphones.',
+        title: 'DIOR Sauvage',
+        price: 29.99,
+        description: 'Christian Dior Sauvage.',
         image: '/images/img-1.jpg'
     },
     {
         id: 2,
-        title: 'Smart Watch',
-        price: 199.50,
-        description: 'A stylish and powerful smart watch.',
-        image: '/images/img-2.jpg'
+        title: 'Bvlgari',
+        price: 19.52,
+        description: 'Bvlgari Black Man.',
+        image: '/images/img-12.jpeg'
     },
     {
-        id: 3, // FIX: Unique ID
-        title: 'T-Shirt (Blue)',
-        price: 25.00,
-        description: 'A comfortable organic cotton blue t-shirt.',
-        image: '/images/img-3.jpg' // FIX: Absolute Path
+        id: 3, 
+        title: 'Uncensored ',
+        price: 25.23,
+        description: 'Uncensored Blue .',
+        image: '/images/img-3.jpg' 
     },
     {
-        id: 4, // FIX: Unique ID
-        title: 'Running Shoes',
-        price: 85.00,
-        description: 'Lightweight performance running shoes.',
-        image: '/images/img-4.jpg' // FIX: Absolute Path
+        id: 4, 
+        title: 'Visconti',
+        price: 20.96,
+        description: 'Visconti Blue Ocean.',
+        image: '/images/img-4.jpg' 
     },
     {
-        id: 5, // FIX: Unique ID
-        title: 'Coffee Mug',
-        price: 12.99,
-        description: 'Ceramic mug for your morning brew.',
-        image: '/images/img-5.jpg' // FIX: Absolute Path
+        id: 5, 
+        title: 'Beardo',
+        price: 22.97,
+        description: 'Beardi Blue Blood.',
+        image: '/images/img-5.jpg'  
     },
     {
-        id: 6, // FIX: Unique ID
-        title: 'Backpack',
+        id: 6, 
+        title: 'Sabates',
         price: 49.99,
-        description: 'Durable and spacious laptop backpack.',
-        image: '/images/img-6.jpg' // FIX: Absolute Path
+        description: 'Aqua Man Perfume.',
+        image: '/images/img-6.jpg' 
     },
     {
-        id: 7, // FIX: Unique ID
-        title: 'Desk Lamp',
-        price: 35.50,
-        description: 'Adjustable LED desk lamp for home office.',
-        image: '/images/img-7.jpg' // FIX: Absolute Path
+        id: 7, 
+        title: 'Boss',
+        price: 35.54,
+        description: 'Hugo Boss Night.',
+        image: '/images/img-11.jpeg' 
     },
     {
-        id: 8, // FIX: Unique ID
-        title: 'Water Bottle',
-        price: 15.00,
-        description: 'Insulated stainless steel water bottle.',
-        image: '/images/img-8.jpg' // FIX: Absolute Path
+        id: 8, 
+        title: 'Blue de Chanel',
+        price: 24.15,
+        description: 'Blue de Chanel Pour.',
+        image: '/images/img-9.jpeg' 
     },
      {
         id: 9,
-        title: 'Wireless Headphones',
-        price: 99.99,
-        description: 'Noise-cancelling over-ear headphones.',
-        image: '/images/img-1.jpg'
+        title: 'Armaf',
+        price: 28.19,
+        description: 'Armaf Nuit Intense.',
+        image: '/images/img-10.jpeg'
     },
     {
         id: 10,
-        title: 'Smart Watch',
-        price: 199.50,
-        description: 'A stylish and powerful smart watch.',
-        image: '/images/img-2.jpg'
+        title: 'Valentino',
+        price: 30.13,
+        description: 'Valentino Uomo Born.',
+        image: '/images/img-2.jpeg'
     },
      {
-        id: 11, // FIX: Unique ID
-        title: 'Desk Lamp',
-        price: 35.50,
-        description: 'Adjustable LED desk lamp for home office.',
-        image: '/images/img-7.jpg' // FIX: Absolute Path
+        id: 11,  
+        title: 'Yves laurent',
+        price: 32.16,
+        description: 'Y Eau de Parfum for men.',
+        image: '/images/img-7.jpg'  
     },
     {
-        id: 12, // FIX: Unique ID
-        title: 'T-Shirt (Blue)',
-        price: 25.00,
-        description: 'A comfortable organic cotton blue t-shirt.',
-        image: '/images/img-3.jpg' // FIX: Absolute Path
+        id: 12,
+        title: 'La French',
+        price: 23.13,
+        description: 'La French BESPOKE Eau de Parfum.',
+        image: '/images/img-8.jpg' 
+    },
+    {
+        id: 13,
+        title: 'Tom Ford',
+        price: 28.19,
+        description: 'EAU DOMBRE LEATHER.',
+        image: '/images/img-13.jpeg' 
+    },
+    {
+        id: 14,
+        title: 'Aqua Di',
+        price: 26.15,
+        description: 'Aqua Di Gio ',
+        image: '/images/img-14.jpeg' 
+    },
+    {
+        id: 15,
+        title: 'Creed',
+        price: 30.11,
+        description: 'Creed Aventus.',
+        image: '/images/img-15.jpeg' 
     },
 ];

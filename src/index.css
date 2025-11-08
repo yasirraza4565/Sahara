@@ -1,22 +1,166 @@
+/* ==================================================================================== */
+/* === GLOBAL & BASE STYLES === */
+/* ==================================================================================== */
+
+*{
+  /* margin: 0; */
+  /* padding: 0; */
+  scroll-behavior: smooth;
+}
+
 body {
-  background-color: #cfcfcfcd;
+  background-color: #f4f6f9;
   margin: 0;
+  font-family: Arial, sans-serif;
 }
 
-.cart-item {
+main {
+  padding: 0.6rem;
+  /* min-height: 80vh; */
+}
+
+
+/* ==================================================================================== */
+/* === HEADER & NAVIGATION STYLES === */
+/* ==================================================================================== */
+
+.header {
+  background: #2c3e50;
+  /* Dark blue background */
+  padding: 1rem;
+}
+
+.navbar {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  text-align: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  /* padding: 1rem; */
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  color: #fff;
 }
 
-.cart-page a {
-  font-size: 1.8rem;
+.logo a {
+  font-family: "Cedarville Cursive", cursive;
+  /* Assuming this font is linked */
   text-decoration: none;
+  font-size: 1.9rem;
+  color: #fff;
+  font-weight: bold;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 1.5rem;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #ecf0f1;
+  font-size: 1.5rem;
+  transition: color 0.3s;
+}
+
+.nav-links a:hover {
+  color: #1abc9c;
+  /* Accent color on hover */
+}
+
+.slider-container, img{
+  width: 100%;
+  height: 100vh;
+}
+
+.slider-container , .slider-image{
+  border-radius: 4px;
+}
+
+/* ==================================================================================== */
+/* === FOOTER STYLES === */
+/* ==================================================================================== */
+
+.footer {
+  background: #2c3e50;
+  color: #ecf0f1;
+  padding: 3rem 1rem 1rem;
+  border-top: 5px solid #1abc9c;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.footer-section {
+  flex: 1;
+  min-width: 200px;
+  font-family: "Montserrat", sans-serif;
+}
+
+.footer-section h4 {
+  font-family: "Montserrat", sans-serif;
+  color: #1abc9c;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.footer-section h5 {
+  font-family: "Montserrat", sans-serif;
+  color: #d8d8d8;
+}
+
+.footer-section p {
+  cursor: pointer;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.footer-section.links ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-section a {
+  color: #ecf0f1;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.footer-section a:hover,
+.footer-section p:hover {
+  color: #1abc9c;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.85rem;
+  color: #bdc3c7;
+}
+
+
+/* ==================================================================================== */
+/* === PRODUCT CARD & GRID STYLES (HOME/PRODUCTS PAGE) === */
+/* ==================================================================================== */
+
+.slider-container ,h2{
+  display: flex;
+  justify-content: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 2rem;
+}
+
+.product-grid {
+  width: 98%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2.5rem;
+  padding: 1rem;
 }
 
 .card {
@@ -33,8 +177,34 @@ body {
 }
 
 .card:hover {
-  box-shadow: 1px 2px 4px 3px #d4d3d3;
+  box-shadow: 4px 16px 16px 0 rgba(74, 72, 72, 0.18);
   transition: all 0.3s ease-in-out;
+}
+
+.card img {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.card h3 {
+  margin: 15px 15px;
+  font-size: 1.5rem;
+}
+
+.card p {
+  margin: 6px 10px 2px 10px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1.4rem;
+}
+
+.card h4 {
+  margin: 10px 10px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1rem;
+  padding: 2px 7px;
+  font-weight: 100;
 }
 
 .add-buy #btn {
@@ -44,9 +214,6 @@ body {
   border-radius: 15px;
   padding: 10px 10px;
   cursor: pointer;
-}
-
-#btn {
   border: 1px solid black;
 }
 
@@ -54,22 +221,44 @@ body {
   background-color: rgb(218, 218, 218);
 }
 
-.cart-item img,
-.card img {
+
+/* ==================================================================================== */
+/* === CART & CHECKOUT STYLES === */
+/* ==================================================================================== */
+
+.cart-page {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.cart-page a {
+  font-size: 1.8rem;
+  text-decoration: none;
+}
+
+.cart-list {
+  margin-bottom: 2rem;
+  border: 2px solid black;
+  padding: 1rem 1rem;
+  border-radius: 15px;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.cart-item img {
   width: 150px;
   height: 150px;
   object-fit: cover;
   border-radius: 6px;
-}
-
-.card,
-h3 {
-  margin: 15px 15px;
-  font-size: 1.5rem;
-}
-
-.card p {
-  font-size: 1.5rem;
 }
 
 .cart-item-details {
@@ -100,69 +289,6 @@ h3 {
   background: #c0392b;
 }
 
-
-.header {
-  background: #2c3e50;
-  padding: 1rem;
-}
-
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: #fff;
-}
-
-.logo a {
-  font-family: "Cedarville Cursive", cursive;
-  text-decoration: none;
-  font-size: 1.9rem;
-  color: #fff;
-  font-weight: bold;
-}
-
-.nav-links {
-  list-style: none;
-  display: flex;
-  gap: 1.5rem;
-}
-
-.nav-links a {
-  text-decoration: none;
-  color: #ecf0f1;
-  font-size: 1.5rem;
-  transition: color 0.3s;
-}
-
-.nav-links a:hover {
-  color: #1abc9c;
-}
-
-
-.cart-page {
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 1rem;
-}
-
-.cart-page h2 {
-  margin-bottom: 1rem;
-  text-align: center;
-}
-
-.cart-list {
-  margin-bottom: 2rem;
-  border: 2px solid black;
-  padding: 1rem 1rem;
-  border-radius: 15px;
-}
-
-.cart-summary {
-  text-align: right;
-  border-top: 1px solid #ddd;
-  padding-top: 1rem;
-}
-
 .checkout-btn {
   background: #1abc9c;
   color: #fff;
@@ -175,14 +301,14 @@ h3 {
   transition: background 0.3s;
 }
 
-.checkout-btn:hover {
-  background: #16a085;
-}
-
+/* Checkout Form Styles */
 .checkout-page {
-  max-width: 600px;
+  background: #f8fafc;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  padding: 2.5rem 2rem;
+  max-width: 700px;
   margin: 2rem auto;
-  padding: 1rem;
 }
 
 .checkout-form {
@@ -192,556 +318,10 @@ h3 {
 }
 
 .checkout-form label {
-  display: flex;
-  flex-direction: column;
-  font-weight: bold;
-}
-
-.checkout-form input,
-.checkout-form textarea,
-.checkout-form select {
-  padding: 0.5rem;
-  margin-top: 0.3rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.place-order-btn {
-  background: #27ae60;
-  color: #fff;
-  border: none;
-  padding: 0.8rem 1.2rem;
-  font-size: 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.place-order-btn:hover {
-  background: #1e8449;
-}
-
-.error {
-  color: red;
-  font-size: 0.85rem;
-}
-
-/* .home-page {
-  max-width: 1200px;
-  margin: 2rem auto;
-  padding: 1rem;
-} */
-
-.home-page h2 {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.product-grid {
-  width: 98%;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2.5rem;
-}
-
-.card:hover {
-  box-shadow: 4px 16px 16px 0 rgba(74, 72, 72, 0.18);
-
-}
-
-.product-detail {
-  max-width: 900px;
-  margin: 2rem auto;
-  display: flex;
-  gap: 2rem;
-  padding: 1rem;
-}
-
-.product-detail img {
-  width: 300px;
-  height: 300px;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-.product-info {
-  flex: 1;
-}
-
-.product-info h2 {
-  margin-bottom: 1rem;
-}
-
-.product-info p {
-  margin-bottom: 1rem;
-  color: #555;
-}
-
-.product-info h3 {
-  margin-bottom: 1rem;
-}
-
-.product-info button {
-  background: #3498db;
-  color: #fff;
-  border: none;
-  padding: 0.8rem 1.2rem;
-  border-radius: 6px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.product-info button:hover {
-  background: #2980b9;
-}
-
-
-.products-page {
-  max-width: 1200px;
-  margin: 2rem auto;
-  padding: 1rem;
-}
-
-.products-page h2 {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-
-main {
-  padding: 1rem;
-  min-height: 80vh;
-}
-
-
-/* --- Footer Styles --- */
-
-.footer {
-  background: #2c3e50;
-  /* Matches your header background */
-  color: #ecf0f1;
-  /* Light text color */
-  padding: 3rem 1rem 1rem;
-  border-top: 5px solid #1abc9c;
-  /* Accent color from checkout button */
-}
-
-.footer-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  /* Allows sections to wrap on smaller screens */
-  gap: 2rem;
-  margin-bottom: 2rem;
-}
-
-.footer-section {
-  flex: 1;
-  min-width: 200px;
-  /* Ensures sections don't get too narrow */
-}
-
-.footer-section h4 {
-  color: #1abc9c;
-  /* Use the accent color for headings */
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
-}
-
-.footer-section p {
-  font-size: 0.95rem;
-  line-height: 1.5;
-}
-
-/* Links List */
-.footer-section.links ul {
-  list-style: none;
-  padding: 0;
-}
-
-.footer-section.links li {
-  margin-bottom: 0.5rem;
-}
-
-.footer-section a {
-  color: #ecf0f1;
-  text-decoration: none;
-  transition: color 0.3s;
-}
-
-.footer-section a:hover {
-  color: #1abc9c;
-}
-
-/* Bottom Copyright Bar */
-.footer-bottom {
-  text-align: center;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 0.85rem;
-  color: #bdc3c7;
-}
-
-/* --- Media Query for Mobile --- */
-@media (max-width: 768px) {
-  .footer-content {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .footer-section {
-    min-width: 100%;
-    padding-bottom: 1rem;
-  }
-}
-
-
-/* --- About Page Styles --- */
-
-.about-page {
-  max-width: 1000px;
-  margin: 2rem auto;
-  padding: 1rem;
-}
-
-.about-header {
-  text-align: center;
-  margin-bottom: 3rem;
-  padding: 2rem 0;
-  border-bottom: 2px solid #ddd;
-}
-
-.about-header h1 {
-  font-size: 2.5rem;
-  color: #2c3e50;
-  /* Dark blue, matching your header */
-  margin-bottom: 0.5rem;
-}
-
-.about-header p {
-  font-size: 1.1rem;
-  color: #7f8c8d;
-}
-
-.about-section {
-  margin-bottom: 3rem;
-  padding: 1.5rem 0;
-}
-
-.about-section h2 {
-  color: #1abc9c;
-  /* Accent color */
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-  border-left: 5px solid #1abc9c;
-  padding-left: 10px;
-}
-
-.about-section p {
-  line-height: 1.6;
-  color: #34495e;
-  font-size: 1rem;
-}
-
-/* Value Cards Styling */
-.value-cards {
-  display: flex;
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.card-value {
-  flex: 1;
-  min-width: 250px;
-  padding: 1.5rem;
-  border: 1px solid #ecf0f1;
-  border-radius: 8px;
-  background: #fcfcfc;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s;
-}
-
-.card-value:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
-}
-
-.card-value h3 {
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
-  font-size: 1.2rem;
-}
-
-/* Call to Action Section */
-.about-section.call-to-action {
-  text-align: center;
-  background: #eaf8f6;
-  padding: 2rem;
-  border-radius: 8px;
-  margin-top: 4rem;
-}
-
-.shop-link-btn {
-  display: inline-block;
-  background: #3498db;
-  /* Blue color */
-  color: #fff;
-  border: none;
-  padding: 0.8rem 1.8rem;
-  border-radius: 6px;
-  font-size: 1.1rem;
-  text-decoration: none;
-  margin-top: 1rem;
-  transition: background 0.3s;
-}
-
-.shop-link-btn:hover {
-  background: #2980b9;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-  .value-cards {
-    flex-direction: column;
-  }
-
-  .card-value {
-    min-width: 100%;
-  }
-}
-
-
-
-/* --- Login Popup Styles --- */
-.login-popup-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  /* Ensure it's on top of everything */
-}
-
-.login-popup-content {
-  background: #fff;
-  padding: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  max-width: 400px;
-  text-align: center;
-}
-
-.login-popup-content h3 {
-  color: #2c3e50;
-  margin-bottom: 1rem;
-}
-
-.login-popup-content input {
-  width: 100%;
-  padding: 0.75rem;
-  margin-bottom: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.popup-login-btn {
-  background: #1abc9c;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  width: 40%;
-  margin-bottom: 0.5rem;
-}
-
-.popup-close-btn {
-  background: none;
-  border: none;
-  color: #7f8c8d;
-  cursor: pointer;
-  font-size: 0.9rem;
-  margin-top: 1rem;
-}
-
-
-/* --- Slideshow Styles --- */
-.slider-container {
-  width: 100%;
-  margin: 0 auto 2rem;
-  overflow: hidden;
-  height: 100%;
-  /* Set a fixed height */
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.slider-image {
-  border-radius: 8px;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  /*Ensures image covers the container without distortion*/
-  transition: opacity 1s ease-in-out;
-  /* Optional smooth transition effect */
-}
-
-/* --- Auth Page Styles --- */
-.auth-page {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 70vh;
-  padding: 2rem;
-}
-
-.auth-form-container {
-  background: #fff;
-  padding: 2.5rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 400px;
-}
-
-.auth-form-container h2 {
-  text-align: center;
-  color: #2c3e50;
-  margin-bottom: 2rem;
-  font-size: 1.8rem;
-}
-
-.auth-form-container form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.auth-form-container input {
-  padding: 0.8rem;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 1rem;
-}
-
-.auth-submit-btn {
-  background: #3498db;
-  color: white;
-  padding: 0.9rem;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1.1rem;
-  transition: background 0.3s;
-}
-
-.auth-submit-btn:hover {
-  background: #2980b9;
-}
-
-.auth-toggle {
-  text-align: center;
-  margin-top: 1.5rem;
-  color: #7f8c8d;
-}
-
-.toggle-link {
-  color: #1abc9c;
-  cursor: pointer;
-  font-weight: bold;
-  transition: color 0.2s;
-}
-
-.toggle-link:hover {
-  color: #16a085;
-}
-
-
-/* Checkout.css */
-
-.checkout-page {
-  background: #f8fafc;
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-  padding: 2.5rem 2rem;
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-.checkout-page h2 {
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: #2d3748;
-  margin-bottom: 2rem;
-  text-align: center;
-}
-
-.checkout-form h5 {
-  font-size: 1.2rem;
-  color: #4a5568;
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-
-.form-group label {
   font-weight: 500;
   color: #374151;
   margin-bottom: 0.5rem;
   font-size: 1.5rem;
-}
-
-.form-control {
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  background: #fff;
-  transition: border-color 0.2s;
-}
-
-.form-control:focus {
-  border-color: #3182ce;
-  box-shadow: 0 0 0 2px #3182ce33;
-}
-
-.form-check-input {
-  accent-color: #3182ce;
-  width: 1.2em;
-  height: 1.2em;
-  margin-right: 0.5em;
-}
-
-.form-check-label {
-  font-size: 1rem;
-  color: #374151;
-  cursor: pointer;
-}
-
-.text-danger {
-  color: #e53e3e !important;
-  font-size: 0.95rem;
-  margin-top: 0.25rem;
-}
-
-.place-order-btn {
-  background: linear-gradient(90deg, #3182ce 0%, #00b4d8 100%);
-  color: #fff;
-  font-weight: 700;
-  border: 1.5px solid #3182ce;
-  border-radius: 10px;
-  padding: 1rem 1rem;
-  font-size: 1.2rem;
-  box-shadow: 0 2px 8px rgba(49, 130, 206, 0.12);
-  transition: background 0.2s, box-shadow 0.2s;
 }
 
 .checkout-form input,
@@ -753,131 +333,305 @@ main {
   border-radius: 25px;
 }
 
+.place-order-btn {
+  background: linear-gradient(90deg, #3182ce 0%, #00b4d8 100%);
+  color: #fff;
+  font-weight: 700;
+  border: 1.5px solid #3182ce;
+  border-radius: 10px;
+  padding: 1rem 1rem;
+  font-size: 1.2rem;
+  transition: background 0.2s;
+}
+
 .place-order-btn:hover {
   background: linear-gradient(90deg, #2563eb 0%, #0096c7 100%);
-  box-shadow: 0 4px 16px rgba(49, 130, 206, 0.18);
 }
 
-.checkout-form .row {
-  margin-bottom: 0.5rem;
+.text-danger {
+  color: #e53e3e !important;
 }
 
-.checkout-form .col-md-6 {
-  padding-right: 0.5rem;
-  padding-left: 0.5rem;
+
+/* ==================================================================================== */
+/* === ADMIN DASHBOARD STYLES (NEW STYLING) === */
+/* ==================================================================================== */
+
+/* --- ADMIN GLOBAL LAYOUT (Step 1 & 2) --- */
+
+.admin-full-page {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f4f6f9;
 }
 
-.checkout-page h4 {
-  color: #2563eb;
+/* --- Sidebar (Step 1, 3, 9) --- */
+.admin-sidebar {
+  width: 250px;
+  background: #34495e;
+  /* Dark sidebar color */
+  color: white;
+  padding: 20px;
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.admin-logo {
+  font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: 1.5rem;
+  margin-bottom: 30px;
+  color: #1abc9c;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 15px;
 }
 
-@media (max-width: 600px) {
-  .checkout-page {
-    padding: 1rem 0.5rem;
-  }
-
-  .checkout-form .row {
-    flex-direction: column;
-  }
-
-  .checkout-form .col-md-6 {
-    padding: 0;
-  }
+/* Sidebar Navigation (Step 3: Links) */
+.sidebar-nav {
+  flex-grow: 1;
+  margin-top: 20px;
 }
 
-/* --- Admin Dashboard Styles --- */
-
-.admin-page {
-    max-width: 1400px;
-    margin: 2rem auto;
-    padding: 1rem;
+.sidebar-nav .nav-item {
+  display: flex;
+  /* Use flex to align icon and text */
+  align-items: center;
+  padding: 12px 15px;
+  margin-bottom: 8px;
+  color: #bdc3c7;
+  text-decoration: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  transition: background 0.3s, color 0.3s;
 }
 
-.admin-header {
-    text-align: center;
-    margin-bottom: 3rem;
-    color: #2c3e50;
+.sidebar-nav .nav-item i {
+  margin-right: 15px;
+  width: 20px;
+  text-align: center;
 }
 
-.admin-metrics {
-    margin-bottom: 4rem;
+.sidebar-nav .nav-item:hover {
+  background: #475f77;
+  color: white;
 }
 
-.admin-metrics h2 {
-    color: #1abc9c;
-    margin-bottom: 1.5rem;
-    border-bottom: 2px solid #ecf0f1;
-    padding-bottom: 0.5rem;
+.sidebar-nav .nav-item.active {
+  background: #1abc9c;
+  /* Accent color for active tab */
+  color: white;
+  font-weight: bold;
 }
+
+/* Logout Button (Step 1, 9) */
+.admin-logout-btn {
+  margin-top: 30px;
+  /* Space from last nav item */
+  padding: 10px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.admin-logout-btn:hover {
+  background: #c0392b;
+}
+
+
+/* --- Main Content Area --- */
+.admin-main-content {
+  flex-grow: 1;
+  padding: 30px;
+}
+
+.admin-page-container {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.admin-section-title {
+  color: #34495e;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 0.5rem;
+  margin-bottom: 2rem;
+  font-size: 1.6rem;
+}
+
+/* --- Dashboard Metrics (Step 8) --- */
 
 .metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
 }
 
 .metric-card {
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-    border-left: 5px solid #3498db;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-top: 5px solid;
+  /* Use border-top for the color line */
+  transition: transform 0.2s;
 }
 
+.metric-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+
+/* Specific Card Colors */
+.metric-card.revenue {
+  border-color: #2ecc71;
+}
+
+/* Green */
+.metric-card.sold {
+  border-color: #f39c12;
+}
+
+/* Orange */
+.metric-card.stock {
+  border-color: #3498db;
+}
+
+/* Blue */
+.metric-card.alert {
+  border-color: #e74c3c;
+}
+
+/* Red */
+
 .metric-card h3 {
-    color: #7f8c8d;
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
 }
 
 .metric-card p {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #2c3e50;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #2c3e50;
 }
 
-.metric-card.profit .positive { color: #2ecc71; }
-.metric-card.profit .negative { color: #e74c3c; }
-.metric-card.revenue { border-left-color: #2ecc71; }
-.metric-card.sold { border-left-color: #f39c12; }
-
-
-/* Product Form Styling */
-.admin-product-management h2 {
-    color: #3498db;
-    margin-bottom: 1.5rem;
+/* --- Dashboard Charts (Step 4) --- */
+.dashboard-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-top: 40px;
 }
 
-.product-form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    padding: 20px;
-    background: #fcfcfc;
-    border: 1px solid #eee;
-    border-radius: 8px;
+.chart-box {
+  padding: 20px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.product-form-grid input {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+
+/* --- Stock & Profile Styles (Step 6, 7) --- */
+.stock-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+}
+
+.stock-table th,
+.stock-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.stock-table th {
+  background-color: #f5f5f5;
+  color: #2c3e50;
+  font-weight: bold;
+}
+
+.product-cell {
+  display: flex;
+  align-items: center;
+}
+
+.stock-img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+/* Profile Card (Step 7) */
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  padding: 20px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
+
+.profile-img {
+  width: 25%;
+  height: 25%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #1abc9c;
+}
+
+.profile-details {
+  width: 75%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 1.3rem;
+}
+
+.profile-details p {
+  border: 2px solid #1abc9c;
+  width: 60%;
+  padding: 10px 10px;
+  border-radius: 6px;
+}
+
+.social-links a {
+  font-size: 24px;
+  margin-right: 15px;
+  transition: color 0.3s;
 }
 
 .admin-submit-btn {
-    grid-column: 1 / -1; /* Span two columns */
-    background: #27ae60;
-    color: white;
-    padding: 12px;
-    font-size: 1.1rem;
-    border: none;
-    cursor: pointer;
-    border-radius: 6px;
-    transition: background 0.3s;
+  background: #1abc9c;
+  padding: 10px 10px;
+  margin: 4px;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
 }
 
-.admin-submit-btn:hover {
-    background: #1e8449;
+.social-links .fa-instagram {
+  color: #E1306C;
+}
+
+.social-links .fa-facebook-f {
+  color: #3b5998;
 }
