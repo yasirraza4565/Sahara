@@ -79,7 +79,6 @@ const AuthPage = () => {
 
   return (
     <div className='auth-page'>
-      {/* Notification component (renders only when message exists) */}
       <Notification message={notification?.message} type={notification?.type} />
 
       <div className='auth-form-container'>
