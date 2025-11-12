@@ -4,7 +4,7 @@ import React, { useContext } from 'react';
 import ProductCard from '../components/ProductCard';
 import { products } from '../productsData';
 import { CartContext } from "../contexts/CartContext";
-import ImageSlider from '../components/ImageSlider'; // <-- Import Slider
+import ImageSlider from '../components/ImageSlider'; 
 
 const Home = () => {
     const { addToCart } = useContext(CartContext); 

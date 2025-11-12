@@ -13,6 +13,7 @@ import About from './pages/About';
 import AuthPage from './pages/AuthPage';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminLayout from './components/AdminLayout';
+import OrderConfirmation from './pages/OrderConfirmation';
 
 const App = () => {
     const handleLogin = () => console.log("user logged in or continue.");
@@ -27,27 +28,28 @@ const App = () => {
                         element={
                             <>
                                 <Header />
-                                <LoginPopup onLoginSuccess={handleLogin} onClose={handleClose} />
-                                <main>
-                                    <Routes>
-                                        <Route path='/' element={<Home />} />
-                                        <Route path='/products' element={<Products />} />
-                                        <Route path='/product/:id' element={<ProductDetail />} />
-                                        <Route path='/cart' element={<Cart />} />
-                                        <Route path='/checkout' element={<Checkout />} />
-                                        <Route path='/about' element={<About />} />
-                                        <Route path='/auth' element={<AuthPage />} /> {/* <-- NEW AUTH ROUTE */}
-                                        <Route path='/admin' element={<AdminDashboard />} />
-                                    </Routes>
-                                </main>
-                                <Footer />
-                            </>
+                                    {/* <Route path='/order-confirmation' element={<OrderConfirmation />} /> */}
+                                    <main>
+                                        <Routes>
+                                            <Route path='/' element={<Home />} />
+                                            <Route path='/products' element={<Products />} />
+                                            <Route path='/product/:id' element={<ProductDetail />} />
+                                            <Route path='/cart' element={<Cart />} />
+                                            <Route path='/checkout' element={<Checkout />} />
+                                            <Route path='/about' element={<About />} />
+                                            <Route path='/auth' element={<AuthPage />} />
+                                            <Route path='/admin' element={<AdminDashboard />} />
+                                            <Route path='/order-confirmation' element={<OrderConfirmation />} />
+                                        </Routes>
+                                    </main>
+                                    <Footer />
+                                </>
                         }
                     />
-                </Routes>
-            </Router>
-        </CartProvider>
-    );
+                            </Routes>
+                    </Router>
+                </CartProvider>
+                );
 };
 
-export default App;
+                export default App;

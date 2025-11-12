@@ -1,4 +1,4 @@
-// src/pages/AdminDashboard.jsx
+// src/pages/AdminDashboard.jsx (FINAL CORRECTED CODE)
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -8,7 +8,7 @@ import 'chart.js/auto'; // registers chart types
 
 const BACKEND_URL = 'http://localhost:5000/api';
 
-/* ---------------------------- Dashboard Home (Steps 4 & 8) ---------------------------- */
+/* ---------------------------- Dashboard Home ---------------------------- */
 const DashboardHome = ({ metrics = {} }) => {
     // Variables MUST be defined inside the component scope
     const revenue = parseFloat(metrics.totalRevenue) || 0;
@@ -28,7 +28,6 @@ const DashboardHome = ({ metrics = {} }) => {
     return (
         <>
             <h2 className="admin-section-title">Overview Dashboard</h2>
-
             <div className="metrics-grid">
                 <div className="metric-card revenue"><h3>TOTAL REVENUE</h3><p>${revenue.toFixed(2)}</p></div>
                 <div className="metric-card sold"><h3>PRODUCTS SOLD</h3><p>{metrics.productsSold ?? 0}</p></div>
@@ -62,11 +61,11 @@ const DashboardHome = ({ metrics = {} }) => {
 /* ---------------------------- My Stock (Step 6) ---------------------------- */
 const MyStock = ({ products = [], onAddProduct, fetchProducts, setNotification }) => {
     const [newProduct, setNewProduct] = useState({ title: '', price: '', image: '', description: '', stock: 30 });
-    const [imageFile, setImageFile] = useState(null); 
-    const [imagePreviewUrl, setImagePreviewUrl] = useState(''); 
+    const [imageFile, setImageFile] = useState(null);
+    const [imagePreviewUrl, setImagePreviewUrl] = useState('');
 
     const handleChange = (e) => setNewProduct({ ...newProduct, [e.target.name]: e.target.value });
-
+    
     // --- Image Upload Logic ---
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -86,10 +85,7 @@ const MyStock = ({ products = [], onAddProduct, fetchProducts, setNotification }
 
         try {
             const response = await axios.post(`${BACKEND_URL}/admin/upload-image`, formData, {
-                headers: { 
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data' 
-                }
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
             });
             return response.data.imageUrl; // Returns public URL
         } catch (error) {
@@ -98,7 +94,6 @@ const MyStock = ({ products = [], onAddProduct, fetchProducts, setNotification }
         }
     };
 
-    // --- Modified handleAdd ---
     const handleAdd = async (e) => {
         e.preventDefault();
         if (!newProduct.title || !newProduct.price || Number(newProduct.stock) <= 0) {
@@ -106,11 +101,10 @@ const MyStock = ({ products = [], onAddProduct, fetchProducts, setNotification }
             return;
         }
 
-        let imageUrl = newProduct.image || ''; // Default to URL input if file not selected
-        
+        let imageUrl = newProduct.image || ''; // Use URL input if file not selected
         if (imageFile) {
             imageUrl = await uploadImageAndGetUrl(imageFile);
-            if (!imageUrl) return; 
+            if (!imageUrl) return; // Stop if upload failed
         }
 
         try {
@@ -119,17 +113,16 @@ const MyStock = ({ products = [], onAddProduct, fetchProducts, setNotification }
             });
             setNotification?.({ message: 'Product added successfully!', type: 'success' });
             
-            // Reset state
             setNewProduct({ title: '', price: '', image: '', description: '', stock: 30 });
             setImageFile(null);
             setImagePreviewUrl('');
             
             if (typeof fetchProducts === 'function') fetchProducts();
         } catch (err) {
-            // Error notification is handled within onAddProduct's try/catch chain
+            // Error handling for onAddProduct happens in parent component
         }
     };
-    
+
     return (
         <>
             <h2 className="admin-section-title">Inventory: My Stock ({products.length} Products)</h2>
@@ -141,6 +134,7 @@ const MyStock = ({ products = [], onAddProduct, fetchProducts, setNotification }
                             <tr key={p.id}>
                                 <td>{p.id}</td>
                                 <td className="product-cell">
+                            
                                     {p.image_url && <img src={p.image_url} alt={p.title} className="stock-img" />}
                                     <span>{p.title}</span>
                                 </td>
@@ -158,28 +152,17 @@ const MyStock = ({ products = [], onAddProduct, fetchProducts, setNotification }
 
             <h2 className="admin-section-title mt-5">Add New Product</h2>
             <form onSubmit={handleAdd} className="product-form-grid">
-                {/* Image Upload Input */}
                 <div className="product-image-upload">
                     <label htmlFor="file-upload">Product Image (Upload)</label>
-                    <input 
-                        type="file" 
-                        id="file-upload" 
-                        name="imageFile" 
-                        accept="image/*" 
-                        onChange={handleFileChange} 
-                    />
-                    {imagePreviewUrl && (
-                        <img src={imagePreviewUrl} alt="Preview" className="image-preview" />
-                    )}
+                    <input type="file" id="file-upload" name="imageFile" accept="image/*" onChange={handleFileChange} />
+                    {imagePreviewUrl && (<img src={imagePreviewUrl} alt="Preview" className="image-preview" />)}
                 </div>
-
                 <input name="title" placeholder="Title" value={newProduct.title} onChange={handleChange} required />
                 <input name="price" type="number" placeholder="Dollar Price" value={newProduct.price} onChange={handleChange} required />
                 <textarea name="description" placeholder="Description" value={newProduct.description} onChange={handleChange} />
-                {/* Hidden input to pass manual URL if file upload isn't used or fails */}
-                <input type="hidden" name="image" value={newProduct.image || ''} /> 
+                {/* Restored manual image URL input */}
+                {/* <input name="image" placeholder="Image URL (Manual/Fallback)" value={newProduct.image} onChange={handleChange} />  */}
                 <input name="stock" type="number" placeholder="Stock Qty (e.g. 30)" value={newProduct.stock} onChange={handleChange} required />
-                
                 <button type="submit" className="btn admin-submit-btn">Add Product</button>
             </form>
         </>
@@ -196,7 +179,6 @@ const SalesReport = ({ metrics = {} }) => {
                 <div className="metric-card sold"><h3>Products Sold</h3><p>{metrics.productsSold ?? 0}</p></div>
                 <div className="metric-card profit"><h3>Estimated Profit</h3><p className="text-success">${(parseFloat(metrics.profit) || 0).toFixed(2)}</p></div>
             </div>
-
             <table className="stock-table">
                 <thead><tr><th>Order ID</th><th>Customer</th><th>Total</th><th>Date</th></tr></thead>
                 <tbody><tr><td colSpan="4">Sales report data will be loaded from the database here.</td></tr></tbody>
@@ -208,12 +190,10 @@ const SalesReport = ({ metrics = {} }) => {
 /* ---------------------------- My Profile (Step 7) ---------------------------- */
 const MyProfile = ({ profile = {}, setNotification, fetchData }) => {
     const [isEditing, setIsEditing] = useState(false);
-    // Initialize form data using profile props
     const [formData, setFormData] = useState({
         name: profile.name || '', mobNo: profile.mobNo || '', email: profile.email || '', location: profile.location || '', user_id: profile.user_id || null,
     });
 
-    // Sync form data when profile prop changes
     useEffect(() => {
         setFormData((f) => ({ ...f, name: profile.name || '', mobNo: profile.mobNo || '', email: profile.email || '', location: profile.location || '', user_id: profile.user_id || f.user_id }));
     }, [profile]);
@@ -241,7 +221,8 @@ const MyProfile = ({ profile = {}, setNotification, fetchData }) => {
         <>
             <h2 className="admin-section-title">Admin Profile</h2>
             <div className="profile-card">
-                <img src={'/images/admin_placeholder.png'} alt="Admin" className="profile-img" />
+                {/* FIX: Profile image path corrected to use generic placeholder */}
+                <img src={'/images/yasir.jpg'} alt="Admin" className="profile-img" />
                 <div className="profile-details">
                     <p><strong>Name:</strong> {isEditing ? <input name="name" value={formData.name} onChange={handleChange} /> : <span>{formData.name}</span>}</p>
                     <p><strong>Mobile:</strong> {isEditing ? <input name="mobNo" value={formData.mobNo} onChange={handleChange} /> : <span>{formData.mobNo}</span>}</p>
@@ -277,7 +258,7 @@ const AdminDashboard = ({ setNotification, activeTab }) => {
     const fetchData = useCallback(async (token) => {
         const authToken = token || localStorage.getItem('authToken');
         if (!authToken) { setNotification?.({ message: 'Authentication token missing', type: 'error' }); return; }
-        
+
         try {
             const [metricsRes, productsRes] = await Promise.all([
                 axios.get(`${BACKEND_URL}/admin/dashboard`, { headers: { Authorization: `Bearer ${authToken}` } }),
@@ -286,11 +267,11 @@ const AdminDashboard = ({ setNotification, activeTab }) => {
 
             setMetrics(metricsRes.data || {});
             setProducts(productsRes.data || []);
-            
-            // Static profile data fallback/initial load
-            setProfile({ 
-                name: 'Sahara Admin', mobNo: '9876543210', email: 'admin@sahara.com', 
-                location: 'Chennai, India', image: '/images/admin_placeholder.png' 
+
+            // Set static/default profile data initially (or use data from the API if available)
+            setProfile({
+                name: 'Sahara Admin', mobNo: '9876543210', email: 'admin@sahara.com',
+                location: 'Chennai, India', image: '/images/admin_placeholder.png'
             });
         } catch (err) {
             console.error('Failed to fetch admin data:', err);
@@ -325,7 +306,6 @@ const AdminDashboard = ({ setNotification, activeTab }) => {
         if (token && isAdminFlag === 'true') {
             fetchData(token);
         }
-        // NOTE: Auth check/redirect for non-admin is primarily handled by AdminLayout
     }, [fetchData]);
 
     const renderContent = () => {
