@@ -81,7 +81,7 @@ export const products = [
         id: 12,
         title: 'La French',
         price: 23.13,
-        description: 'La French BESPOKE Eau de Parfum.',
+        description: 'La French BESPOKE.',
         image: '/images/img-8.jpg' 
     },
     {
